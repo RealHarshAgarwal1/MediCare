@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { userAuthStore } from '@/store/authStore';
 
-export default function AuthSuccessPage() {
+function AuthSuccessContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { setUser } = userAuthStore();
@@ -46,5 +46,24 @@ export default function AuthSuccessPage() {
         }}>
             Signing you in...
         </div>
+    );
+}
+
+export default function AuthSuccessPage() {
+    return (
+        <Suspense fallback={
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100vh',
+                fontSize: '1.2rem',
+                color: '#666'
+            }}>
+                Signing you in...
+            </div>
+        }>
+            <AuthSuccessContent />
+        </Suspense>
     );
 }
