@@ -16,8 +16,20 @@ const app = express();
 
 //helmet is a security middleware for Express 
 //It helps protect your app by settings various HTTP headers
-app.use(helmet());
-
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://*"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+            imgSrc: ["'self'", "data:", "https://*"],
+            connectSrc: ["'self'", "ws:", "wss:", "https://*"],
+            frameSrc: ["'self'", "https://*"],
+        },
+    },
+    crossOriginEmbedderPolicy: false,
+}));
 //morgan is an HTTP request logger middleware
 app.use(morgan('dev'))
 app.use(cors({
