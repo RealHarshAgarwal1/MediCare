@@ -1,6 +1,5 @@
 import { Appointment } from "@/store/appointmentStore";
 import React, { useCallback, useEffect, useRef } from "react";
-import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
 
 interface AppointmentCallInterface {
   appointment: Appointment;
@@ -30,7 +29,7 @@ const AppointmentCall = ({
     [joinConsultation]
   );
 
-  
+
 
   const intializeCall = useCallback(
     async (container: HTMLDivElement) => {
@@ -66,6 +65,9 @@ const AppointmentCall = ({
         } catch (error) {
           console.warn("failed to update appointment", error);
         }
+
+        // Dynamically import ZegoUIKitPrebuilt only when initializing the call on the client
+        const { ZegoUIKitPrebuilt } = await import("@zegocloud/zego-uikit-prebuilt");
 
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
           numericAppId,
