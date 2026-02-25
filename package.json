@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "MediCare+ - Online Doctor Consultation Platform",
   "scripts": {
-    "install:all": "cd backend && npm install && cd ../frontend && npm install --legacy-peer-deps",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install --legacy-peer-deps --include=dev",
     "build": "cd frontend && npm run build",
     "start": "cd backend && node server.js",
     "dev:backend": "cd backend && npm run dev",
