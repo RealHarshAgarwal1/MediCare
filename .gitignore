@@ -1,0 +1,17 @@
+# Dependencies
+/frontend/node_modules
+/backend/node_modules
+node_modules
+
+# Environment files
+/frontend/.env
+/frontend/.env.local
+/backend/.env
+.env
+
+# Next.js build output
+/frontend/.next
+
+# Misc
+.DS_Store
+*.log
