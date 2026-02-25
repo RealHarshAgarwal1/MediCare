@@ -93,8 +93,8 @@ if (process.env.NODE_ENV === 'production') {
                     ws: true,
                 }));
                 console.log('Next.js proxy configured');
-            }).on('error', () => {
-                console.log('Waiting for Next.js server...');
+            }).on('error', (err) => {
+                console.log(`Waiting for Next.js server... (${err.message})`);
                 setTimeout(check, 1000);
             });
         };
