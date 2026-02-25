@@ -57,33 +57,53 @@ if (process.env.NODE_ENV === 'production') {
     const { createProxyMiddleware } = require('http-proxy-middleware');
     const { spawn } = require('child_process');
 
-    const nextDir = path.join(__dirname, '..', 'frontend', '.next', 'standalone');
+    const standaloneDir = path.join(__dirname, '..', 'frontend', '.next', 'standalone');
+    const NEXT_PORT = 3000;
 
     // Start the Next.js standalone server on an internal port
-    const NEXT_PORT = 3000;
-    const nextServer = spawn('node', ['frontend/server.js'], {
-        cwd: nextDir.replace('/frontend/server.js', '').replace('\\frontend\\server.js', ''),
-        env: { ...process.env, PORT: NEXT_PORT, HOSTNAME: '0.0.0.0' },
+    console.log('Starting Next.js standalone server...');
+    console.log('Standalone dir:', standaloneDir);
+
+    const nextServer = spawn('node', [path.join('frontend', 'server.js')], {
+        cwd: standaloneDir,
+        env: { ...process.env, PORT: String(NEXT_PORT), HOSTNAME: '0.0.0.0' },
         stdio: 'inherit',
-        shell: true,
     });
 
-    // Actually, let's use a simpler approach - serve static files + proxy
-    // Serve Next.js static assets
-    app.use('/_next/static', express.static(path.join(__dirname, '..', 'frontend', '.next', 'static')));
-    app.use('/favicon.ico', express.static(path.join(__dirname, '..', 'frontend', 'public', 'favicon.ico')));
+    nextServer.on('error', (err) => {
+        console.error('Failed to start Next.js server:', err);
+    });
 
-    // Proxy all other non-API requests to Next.js standalone server
-    setTimeout(() => {
-        app.use('/', createProxyMiddleware({
-            target: `http://127.0.0.1:${NEXT_PORT}`,
-            changeOrigin: true,
-            ws: true,
-        }));
-        console.log('Next.js proxy configured');
-    }, 2000); // Wait for Next.js server to start
+    // Serve Next.js static assets directly (not included in standalone)
+    app.use('/_next/static', express.static(path.join(__dirname, '..', 'frontend', '.next', 'static')));
+
+    // Serve public folder assets
+    const publicDir = path.join(__dirname, '..', 'frontend', 'public');
+    app.use(express.static(publicDir));
+
+    // Wait for Next.js to boot, then proxy all non-API routes
+    const waitAndProxy = () => {
+        const http = require('http');
+        const check = () => {
+            http.get(`http://127.0.0.1:${NEXT_PORT}/`, (res) => {
+                console.log(`Next.js server ready (status: ${res.statusCode})`);
+                app.use('/', createProxyMiddleware({
+                    target: `http://127.0.0.1:${NEXT_PORT}`,
+                    changeOrigin: true,
+                    ws: true,
+                }));
+                console.log('Next.js proxy configured');
+            }).on('error', () => {
+                console.log('Waiting for Next.js server...');
+                setTimeout(check, 1000);
+            });
+        };
+        check();
+    };
+    waitAndProxy();
 
     process.on('exit', () => nextServer.kill());
+    process.on('SIGTERM', () => { nextServer.kill(); process.exit(0); });
 }
 
 
